@@ -2,13 +2,14 @@
   <div>
     <v-app>
       <v-app-bar app>
+        <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>签到系统</v-toolbar-title>
       </v-app-bar>
 
       <v-main>
         <!--  -->
         <v-container
-            v-show="navi_bar == 0 && act_info.total==0"
+            v-show="group == 0 && act_info.total==0"
             fluid
         >
           <div justify="center" align="center">
@@ -18,7 +19,7 @@
         </v-container>
 
         <v-container
-            v-show="navi_bar == 0 && act_info.total!=0"
+            v-show="group == 0 && act_info.total!=0"
         >
         <!--首页(有活动)-->
         
@@ -73,7 +74,7 @@
         </v-container>
 
         <v-container
-                v-show="navi_bar == 1"
+                v-show="group == 1"
         >
         <div class="pa-5">
           <div class="text-h4 mb-5">
@@ -108,7 +109,7 @@
         </v-container>
 
         <v-container
-                v-show="navi_bar == 2"
+                v-show="group == 2"
         >
         <!-- 个人信息 -->
         <v-card class="mx-3">
@@ -387,7 +388,7 @@
         <v-card-text>
           <v-container>
             <!-- 内容 -->
-            <div class="text-body-1">微信推送功能借助第三方平台「WxPusher」实现，绑定后，系统将通过此平台向您推送通知。</div>
+            <div class="text-body-1">微信推送功能借助第三方平台「WxPusher」实现，关注服务号即完成绑定，系统将通过此平台向您推送通知。</div>
             <v-img :src="wechat_bind_data.qrcode_url" alt="获取失败" class="mx-auto" max-width="200px"></v-img>
             <div class="text-caption text-center">请使用微信扫描此处二维码</div>
             <!-- 内容 -->
@@ -429,31 +430,54 @@
 
 
       </v-main>
-      <v-bottom-navigation
-              v-model="navi_bar"
-              :background-color="navi_color"
-              bottom
-              grow
-              dark
-              shift
-              app
+      <v-navigation-drawer
+      v-model="drawer"
+      absolute
+      temporary
+    >
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="text-h6">
+            功能菜单
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            用户端
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-divider></v-divider>
+
+      <v-list
+        nav
       >
-        <v-btn class="nav-btn">
-          <span>签到</span>
-          <v-icon>mdi-calendar-check</v-icon>
-        </v-btn>
-        
+      <v-list-item-group
+        v-model="group"
+        active-class="deep-purple--text text--accent-4"
+      >
+        <v-list-item>
+          <v-list-item-icon>
+            <v-icon>mdi-calendar-check</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>主页</v-list-item-title>
+        </v-list-item>
 
-        <v-btn class="nav-btn">
-          <span>签到记录</span>
-          <v-icon>mdi-calendar-search</v-icon>
-        </v-btn>
+        <v-list-item>
+          <v-list-item-icon>
+            <v-icon>mdi-calendar-search</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>签到记录</v-list-item-title>
+        </v-list-item>
 
-        <v-btn class="nav-btn">
-          <span>我的</span>
-          <v-icon>mdi-account</v-icon>
-        </v-btn>
-      </v-bottom-navigation>
+        <v-list-item>
+          <v-list-item-icon>
+            <v-icon>mdi-account</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>我的</v-list-item-title>
+        </v-list-item>
+      </v-list-item-group>
+    </v-list>
+    </v-navigation-drawer>
 
     </v-app>
   </div>
@@ -461,11 +485,14 @@
 
 <script>
 const backEndUrl = process.env.VUE_APP_API_URL;
+import nProgress from 'nprogress'
 export default {
     name:"UserIndex",
     data(){
       return {
         navi_bar:0,
+        drawer:false,
+        group:0,
         badge:true,
         dialog:{
             open:false,
@@ -787,19 +814,12 @@ export default {
             this.dialog.text = text
         },
     },
-    computed: {
-      navi_color() {
-        switch (this.navi_bar) {
-          case 0:
-            return 'teal'
-          case 1:
-            return 'brown'
-          case 2:
-            return 'indigo'
-          default:
-            return 'blue-grey'
-        }
-      },
+    watch:{
+      group:function(){
+        nProgress.start()
+        this.drawer = false
+        nProgress.done()
+      }
     },
 }
 </script>

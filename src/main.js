@@ -4,9 +4,22 @@ import  './plugins/axios'
 import vuetify from './plugins/vuetify'
 import App from './App.vue'
 import store from './store'
+import nProgress from 'nprogress'
+import "nprogress/nprogress.css"
 import router from './router'
 
 Vue.config.productionTip = false
+
+nProgress.configure({ease:'ease',speed:500})
+
+router.beforeEach((to,from,next)=>{
+  nProgress.start()
+  next()
+})
+router.afterEach( () =>{
+  nProgress.done()
+})
+
 new Vue({
   router,
   store,
