@@ -12,7 +12,7 @@
             v-show="group == 0 && act_info.total==0"
             fluid
         >
-          <div justify="center" align="center">
+          <div justify="center" align="center" class="mt-12">
             <v-img src="../../assets/qiqihutao.png" max-width="200px" class="mx-auto" alt=""></v-img>
             <div class="text-subtitle-1 grey--text">您的班级此时没有进行中的活动</div>
           </div>
