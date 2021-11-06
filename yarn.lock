@@ -5791,6 +5791,11 @@ npm-run-path@^4.0.0:
   dependencies:
     path-key "^3.0.0"
 
+nprogress@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.nlark.com/nprogress/download/nprogress-0.2.0.tgz#cb8f34c53213d895723fcbab907e9422adbcafb1"
+  integrity sha1-y480xTIT2JVyP8urkH6UIq28r7E=
+
 nth-check@^1.0.2:
   version "1.0.2"
   resolved "https://registry.nlark.com/nth-check/download/nth-check-1.0.2.tgz?cache=0&sync_timestamp=1631795104646&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fnth-check%2Fdownload%2Fnth-check-1.0.2.tgz#b2bd295c37e3dd58a3bf0700376663ba4d9cf05c"
@@ -8365,10 +8370,10 @@ vuetify-loader@^1.7.0:
     file-loader "^6.2.0"
     loader-utils "^2.0.0"
 
-vuetify@^2.4.0:
-  version "2.5.10"
-  resolved "https://registry.npmmirror.com/vuetify/download/vuetify-2.5.10.tgz#165cb3de9dbffbc94bc775aa2f698eb9fa89eabe"
-  integrity sha1-Flyz3p2/+8lLx3WqL2mOufqJ6r4=
+vuetify@^2.5.12:
+  version "2.5.12"
+  resolved "https://registry.npmmirror.com/vuetify/download/vuetify-2.5.12.tgz#d21f6d8ff4a654a3e90f40012ea61b53376adcf4"
+  integrity sha1-0h9tj/SmVKPpD0ABLqYbUzdq3PQ=
 
 vuex@^3.4.0:
   version "3.6.2"
