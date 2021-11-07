@@ -116,7 +116,7 @@
           <v-parallax
           dark
             height="200px"
-            src="https://cdn.vuetifyjs.com/images/parallax/material2.jpg"
+            class="profile_card"
           >
             <v-app-bar
               flat
@@ -174,15 +174,6 @@
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title>绑定微信账号</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-
-          <v-list-item to="/admin" link v-if="myInfo.is_admin">
-            <v-list-item-icon>
-              <v-icon>mdi-account-tie</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>管理员面板</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
 
@@ -475,6 +466,15 @@
           </v-list-item-icon>
           <v-list-item-title>我的</v-list-item-title>
         </v-list-item>
+
+        <v-divider v-if="myInfo.is_admin"></v-divider>
+
+        <v-list-item to="/admin" link v-if="myInfo.is_admin">
+            <v-list-item-icon>
+              <v-icon>mdi-account-tie</v-icon>
+            </v-list-item-icon>
+            <v-list-item-title>管理员面板</v-list-item-title>
+          </v-list-item>
       </v-list-item-group>
     </v-list>
     </v-navigation-drawer>
@@ -825,5 +825,8 @@ export default {
 </script>
 
 <style scoped>
-
+.profile_card{
+  background: rgb(34,193,195);
+  background: linear-gradient(119deg, rgba(34,193,195,1) 0%, rgba(253,187,45,1) 100%);
+}
 </style>
