@@ -7,7 +7,9 @@ import store from './store'
 import nProgress from 'nprogress'
 import "nprogress/nprogress.css"
 import router from './router'
+import VueCookies from 'vue-cookies'
 
+Vue.use(VueCookies)
 Vue.config.productionTip = false
 
 nProgress.configure({ease:'ease',speed:500})
