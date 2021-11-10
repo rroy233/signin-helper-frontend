@@ -250,7 +250,7 @@
             >
                 <v-icon>mdi-close</v-icon>
             </v-btn>
-            <v-toolbar-title>{{act_edit_mode == "new"?"新建活动":"编辑当前活动"}}</v-toolbar-title>
+            <v-toolbar-title>{{act_edit_mode == "new"?"🌟新建活动":"📝编辑当前活动"}}</v-toolbar-title>
             <v-spacer></v-spacer>
             
             <v-toolbar-items>
@@ -602,9 +602,26 @@ export default {
         end_date_menu: false,
         end_time_menu:false
         },
+        csrfHeader:{},
       }
     },
     mounted:function(){
+        let _this = this
+
+        //获取csrf-token
+        this.axios({
+            method: 'get',
+            url: backEndUrl+"/api/admin/csrfToken",
+        }).then(function (res) {
+            if (res.status == 200){
+                _this.csrfHeader = {"X-CSRF-TOKEN":_this.$cookies.get("CSRF-TOKEN")}
+            }else{
+                _this.error(res.data.msg)
+            }
+        }).catch(function (error) {
+            _this.error(error)
+        })
+
         //获取班级信息
         this.initClass()
     },
@@ -687,6 +704,7 @@ export default {
             this.axios({
                 method: 'post',
                 url: backEndUrl+"/api/admin/class/edit",
+                headers:_this.csrfHeader,
                 data:_this.class_edit
             }).then(function (res) {
                 if (res.data.status == 0){
@@ -713,6 +731,7 @@ export default {
             this.axios({
                 method: 'post',
                 url: backEndUrl+apiUrl,
+                headers:_this.csrfHeader,
                 data:_this.act_info
             }).then(function (res) {
                 if (res.data.status == 0){

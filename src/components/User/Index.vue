@@ -176,17 +176,7 @@
               <v-list-item-title>绑定微信账号</v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-
-          <v-list-item href="https://hub.fastgit.org/rroy233/signin-helper" target="_blank" link>
-            <v-list-item-icon>
-              <v-icon>mdi-xml</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>项目地址</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
           
-
           <v-list-item @click="logout" link>
             <v-list-item-icon>
               <v-icon>mdi-logout</v-icon>
@@ -198,7 +188,7 @@
 
         </v-list-item-group>  
         </v-card>
-        <div class="text-caption text-center pa-6">{{version}} <br><a href="https://hub.fastgit.org/rroy233/signin-helper/blob/main/CHANGELOG.md" class="text-decoration-none" target="_blank">更新日志</a></div>
+        <!-- 版本 -->
         </v-container>
 
         <!-- 提示框 -->
@@ -479,6 +469,10 @@
     </v-list>
     </v-navigation-drawer>
 
+    <v-footer app>
+    <!-- -->
+    <div class="text-caption py-3">{{version}} &copy;2021 ROY233<br><a href="https://hub.fastgit.org/rroy233/signin-helper" class="text-decoration-none" target="_blank">Github</a> | <a href="https://hub.fastgit.org/rroy233/signin-helper/blob/main/CHANGELOG.md" class="text-decoration-none" target="_blank">更新日志</a></div>
+    </v-footer>
     </v-app>
   </div>
 </template>
@@ -553,7 +547,8 @@ export default {
           qrcode_url:"",
           token:"",
         },
-        version:"",
+        version:"DevEnv",
+        csrfHeader:{},
       }
     },
     mounted:function(){
@@ -563,6 +558,20 @@ export default {
       initData:function(){
           let _this = this
           this.loading_dialog = true
+
+          //获取csrf-token
+          this.axios({
+              method: 'get',
+              url: backEndUrl+"/api/user/csrfToken",
+          }).then(function (res) {
+              if (res.status == 200){
+                  _this.csrfHeader = {"X-CSRF-TOKEN":_this.$cookies.get("CSRF-TOKEN")}
+              }else{
+                  _this.error(res.data.msg)
+              }
+          }).catch(function (error) {
+              _this.error(error)
+          })
 
           //获取后端版本
           this.axios({
@@ -639,6 +648,7 @@ export default {
           this.axios({
               method: 'post',
               url: backEndUrl+'/api/user/act/signin',
+              headers:_this.csrfHeader,
               data:{
                   act_token:info_item.act_token,
               }
@@ -684,6 +694,7 @@ export default {
         this.axios({
             method: 'post',
             url: backEndUrl+'/api/logout',
+            headers:_this.csrfHeader,
         }).then(function (res) {
             if (res.data.status == 0){
               setTimeout(function (){window.location.href = "https://account.roy233.com/logout"; },1000)
@@ -716,6 +727,7 @@ export default {
         this.axios({
             method: 'post',
             url: backEndUrl+'/api/user/noti/edit',
+            headers:_this.csrfHeader,
             data:{
               noti_type:_this.noti_type
             }
