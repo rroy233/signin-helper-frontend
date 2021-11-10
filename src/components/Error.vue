@@ -5,7 +5,7 @@
           <div class="errorheader mb-12">ERROR</div>
           <div class="text-subtitle-1 my-6"><div class="grey--text">错误信息</div>{{$route.params.info}}</div>
       </div>
-      <v-btn rounded outlined color="rgba(249, 128, 128, 0.6)" dark href="/">返回主页</v-btn>
+      <v-btn rounded outlined color="rgba(249, 128, 128, 0.6)" dark to="/">返回主页</v-btn>
       <div class="justify-end"><v-img src="../assets/girls_cry.jpg"></v-img></div>
     </div>
   </div>
