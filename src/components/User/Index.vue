@@ -7,12 +7,34 @@
       </v-app-bar>
 
       <v-main>
+        <div v-if="noti_list.length != 0">
+          <v-alert
+            v-for="(item,index) in noti_list"
+            :key="index"
+            class="mx-auto mt-5"
+            max-width="450"
+            dense
+            prominent
+            :type="item.type"
+            transition="scale-transition"
+          >
+            <v-row align="center">
+              <v-col class="grow">
+                {{item.text}}
+              </v-col>
+              <v-col class="shrink">
+                <v-btn text @click="noti_check(item)">已阅</v-btn>
+              </v-col>
+            </v-row>
+          </v-alert>
+        </div>
+        
         <!--  -->
         <v-container
             v-show="group == 0 && act_info.total==0"
             fluid
         >
-          <div justify="center" align="center" class="mt-12">
+          <div justify="center" align="center" class="mt-6">
             <v-img src="../../assets/qiqihutao.png" max-width="200px" class="mx-auto" alt=""></v-img>
             <div class="text-subtitle-1 grey--text">您的班级此时没有进行中的活动</div>
           </div>
@@ -27,7 +49,7 @@
           class="mx-auto my-5"
           v-for="(info_item,i) in act_info.list"
           :key="i"
-          max-width="400"
+          max-width="450"
         >
         <v-img
           class="white--text align-end"
@@ -114,7 +136,7 @@
         <!-- 个人信息 -->
         <v-card class="mx-3">
           <v-parallax
-          dark
+            dark
             height="200px"
             class="profile_card"
           >
@@ -177,15 +199,6 @@
             </v-list-item-content>
           </v-list-item>
           
-          <v-list-item @click="logout" link>
-            <v-list-item-icon>
-              <v-icon>mdi-logout</v-icon>
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title>退出登录</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-
         </v-list-item-group>  
         </v-card>
         <!-- 版本 -->
@@ -202,28 +215,6 @@
               <v-spacer></v-spacer>
               <v-btn color="blue darken-1" text @click="dialog.open=!dialog.open">OK</v-btn>
             </v-card-actions>
-          </v-card>
-        </v-dialog>
-
-        <!-- 加载框 -->
-        <v-dialog
-          v-model="loading_dialog"
-          hide-overlay
-          persistent
-          width="300"
-        >
-          <v-card
-            color="light-blue"
-            dark
-          >
-            <v-card-text class="mt-1">
-              加载中
-              <v-progress-linear
-                indeterminate
-                color="white"
-                class="mb-0"
-              ></v-progress-linear>
-            </v-card-text>
           </v-card>
         </v-dialog>
 
@@ -422,7 +413,7 @@
             功能菜单
           </v-list-item-title>
           <v-list-item-subtitle>
-            用户端
+            用户面板
           </v-list-item-subtitle>
         </v-list-item-content>
       </v-list-item>
@@ -457,14 +448,21 @@
           <v-list-item-title>我的</v-list-item-title>
         </v-list-item>
 
-        <v-divider v-if="myInfo.is_admin"></v-divider>
+        <v-divider></v-divider>
 
         <v-list-item to="/admin" link v-if="myInfo.is_admin">
-            <v-list-item-icon>
-              <v-icon>mdi-account-tie</v-icon>
-            </v-list-item-icon>
-            <v-list-item-title>管理员面板</v-list-item-title>
-          </v-list-item>
+          <v-list-item-icon>
+            <v-icon>mdi-account-tie</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>管理员面板</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item @click="logout" link>
+          <v-list-item-icon>
+            <v-icon>mdi-logout</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>退出登录</v-list-item-title>
+        </v-list-item>
       </v-list-item-group>
     </v-list>
     </v-navigation-drawer>
@@ -494,7 +492,6 @@ export default {
             text:''
         },
         change_noti_dialog:false,
-        loading_dialog:false,
         actQueryDialog:false,
         bind_wechat_dialog:false,
         sts_dialog:false,
@@ -549,6 +546,7 @@ export default {
         },
         version:"DevEnv",
         csrfHeader:{},
+        noti_list:[],
       }
     },
     mounted:function(){
@@ -556,92 +554,105 @@ export default {
     },
     methods:{
       initData:function(){
-          let _this = this
-          this.loading_dialog = true
+        let _this = this
+        nProgress.start()
+        //获取csrf-token
+        this.axios({
+            method: 'get',
+            url: backEndUrl+"/api/user/csrfToken",
+        }).then(function (res) {
+            if (res.status == 200){
+                _this.csrfHeader = {"X-CSRF-TOKEN":_this.$cookies.get("CSRF-TOKEN")}
+            }else{
+                _this.error(res.data.msg)
+            }
+        }).catch(function (error) {
+            _this.error(error)
+        })
 
-          //获取csrf-token
-          this.axios({
-              method: 'get',
-              url: backEndUrl+"/api/user/csrfToken",
-          }).then(function (res) {
-              if (res.status == 200){
-                  _this.csrfHeader = {"X-CSRF-TOKEN":_this.$cookies.get("CSRF-TOKEN")}
-              }else{
-                  _this.error(res.data.msg)
-              }
-          }).catch(function (error) {
-              _this.error(error)
-          })
+        //获取后端版本
+        this.axios({
+            method: 'get',
+            url: backEndUrl+'/api/user/version',
+        }).then(function (res) {
+            if (res.data.status == 0){
+                _this.version = res.data.data.version
+            }else{
+                _this.error(res.data.msg)
+            }
+        }).catch(function (error) {
+            _this.error(error)
+        })
 
-          //获取后端版本
-          this.axios({
-              method: 'get',
-              url: backEndUrl+'/api/user/version',
-          }).then(function (res) {
-              if (res.data.status == 0){
-                  _this.version = res.data.data.version
-              }else{
-                  _this.error(res.data.msg)
-              }
-          }).catch(function (error) {
-              _this.error(error)
-          })
-
-          //获取活动信息
-          this.axios({
-              method: 'get',
-              url: backEndUrl+'/api/user/act/info',
-          }).then(function (res) {
-              if (res.data.status == 0){
-                  _this.act_info = res.data.data
-                  if (res.data.data.status == 0){
-                      _this.sign_btn.disabled = false
-                      _this.sign_btn.text = "签到" 
-                  }else{
-                      _this.sign_btn.disabled = true
-                      _this.sign_btn.text = "已签到" 
-                  }
-              }else{
-                  _this.error(res.data.msg)
-              }
-          }).catch(function (error) {
-              _this.error(error)
-          })
-
-          //获取个人信息
-          this.axios({
-              method: 'get',
-              url: backEndUrl+'/api/user/profile',
-          }).then(function (res) {
-              // 处理成功情况
-              if (res.data.status == 0){
-                _this.myInfo = res.data.data
-              }else{
-                  _this.error(res.data.msg)
-              }
-          })
-          .catch(function (error) {
-              // 处理错误情况
-              _this.error(error)
-          })
-
-          //获取参与记录
-          this.axios({
-              method: 'get',
-              url: backEndUrl+'/api/user/act/log',
-          }).then(function (res) {
-              // 处理成功情况
-              if (res.data.status == 0){
-                  _this.myActLog = res.data.data
+        //获取活动信息
+        this.axios({
+            method: 'get',
+            url: backEndUrl+'/api/user/act/info',
+        }).then(function (res) {
+            if (res.data.status == 0){
+                _this.act_info = res.data.data
+                if (res.data.data.status == 0){
+                    _this.sign_btn.disabled = false
+                    _this.sign_btn.text = "签到" 
                 }else{
-                  _this.error(res.data.msg)
+                    _this.sign_btn.disabled = true
+                    _this.sign_btn.text = "已签到" 
                 }
-              _this.loading_dialog = false
-          })
-          .catch(function (error) {
-              // 处理错误情况
-              _this.error(error)
-          })
+            }else{
+                _this.error(res.data.msg)
+            }
+        }).catch(function (error) {
+            _this.error(error)
+        })
+
+        //获取个人信息
+        this.axios({
+            method: 'get',
+            url: backEndUrl+'/api/user/profile',
+        }).then(function (res) {
+            // 处理成功情况
+            if (res.data.status == 0){
+              _this.myInfo = res.data.data
+            }else{
+                _this.error(res.data.msg)
+            }
+        })
+        .catch(function (error) {
+            // 处理错误情况
+            _this.error(error)
+        })
+
+        //获取参与记录
+        this.axios({
+            method: 'get',
+            url: backEndUrl+'/api/user/act/log',
+        }).then(function (res) {
+            // 处理成功情况
+            if (res.data.status == 0){
+                _this.myActLog = res.data.data
+              }else{
+                _this.error(res.data.msg)
+              }
+        })
+        .catch(function (error) {
+            // 处理错误情况
+            _this.error(error)
+        })
+
+        //获取顶置信息
+        this.axios({
+            method: 'get',
+            url: backEndUrl+'/api/user/noti/fetch',
+        }).then(function (res) {
+            if (res.data.status == 0){
+                _this.noti_list = res.data.data
+            }else{
+                _this.error(res.data.msg)
+            }
+        }).catch(function (error) {
+            _this.error(error)
+        })
+        nProgress.done()
       },
       signin:function(info_item){
           let _this = this
@@ -814,6 +825,27 @@ export default {
           .catch(function (error) {
               _this.error(error)
           })
+      },
+      noti_check:function(item){
+        nProgress.start()
+        let _this = this
+        this.axios({
+            method: 'post',
+            url: backEndUrl+'/api/user/noti/check',
+            headers:_this.csrfHeader,
+            data:{
+              token:item.token
+            }
+        }).then(function (res) {
+            if (res.data.status == 0){
+              _this.initData()
+            }else{
+              _this.error(res.data.msg)
+            }
+        }).catch(function (error) {
+            _this.error(error)
+        })
+        nProgress.done()
       },
       success:function(text){
             this.dialog.open = true
