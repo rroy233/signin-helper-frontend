@@ -557,18 +557,13 @@ export default {
         let _this = this
         nProgress.start()
         //获取csrf-token
-        this.axios({
-            method: 'get',
-            url: backEndUrl+"/api/user/csrfToken",
-        }).then(function (res) {
-            if (res.status == 200){
-                _this.csrfHeader = {"X-CSRF-TOKEN":_this.$cookies.get("CSRF-TOKEN")}
-            }else{
-                _this.error(res.data.msg)
-            }
-        }).catch(function (error) {
-            _this.error(error)
-        })
+        if (this.$cookies.get("CSRF-TOKEN")==null){
+          this.$router.push({path:"/error/csrf-token获取失败，请换个浏览器登录"})
+          nProgress.done()
+          return
+        }else{
+          this.csrfHeader = {"X-CSRF-TOKEN":this.$cookies.get("CSRF-TOKEN")}
+        }
 
         //获取后端版本
         this.axios({

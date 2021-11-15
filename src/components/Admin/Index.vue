@@ -606,21 +606,13 @@ export default {
       }
     },
     mounted:function(){
-        let _this = this
-
         //获取csrf-token
-        this.axios({
-            method: 'get',
-            url: backEndUrl+"/api/admin/csrfToken",
-        }).then(function (res) {
-            if (res.status == 200){
-                _this.csrfHeader = {"X-CSRF-TOKEN":_this.$cookies.get("CSRF-TOKEN")}
-            }else{
-                _this.error(res.data.msg)
-            }
-        }).catch(function (error) {
-            _this.error(error)
-        })
+        if (this.$cookies.get("CSRF-TOKEN")==null){
+          this.$router.push({path:"/error/csrf-token获取失败，请换个浏览器登录"})
+          return
+        }else{
+          this.csrfHeader = {"X-CSRF-TOKEN":this.$cookies.get("CSRF-TOKEN")}
+        }
 
         //获取班级信息
         this.initClass()
