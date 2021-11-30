@@ -81,7 +81,14 @@
             large
             text
           >
-          {{info_item.status==1?'已签到':'签到'}}
+          签到
+          <v-icon
+            right
+            dark
+            v-if="info_item.act_type==1&&info_item.status==0"
+          >
+            mdi-cloud-upload
+          </v-icon>
           </v-btn>
           <v-btn
             color="primary"
@@ -90,6 +97,15 @@
             text
           >
             完成情况
+          </v-btn>
+          <v-btn
+            color="red darken-2"
+            v-if="info_item.status==1"
+            @click="cancel(info_item)"
+            large
+            text
+          >
+          取消签到
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -400,8 +416,33 @@
         </v-card>
       </v-dialog>
 
+      <!-- 上传文件 -->
+      <v-dialog v-model="upload.dialog" max-width="500px" v-if="upload.dialog == true">
+          <v-card>
+              <v-card-title class="text-h5">您需要上传文件</v-card-title>
+              <v-card-text>请仔细阅读活动公告，上传所需文件。请勿上传含有违反中国大陆法律内容的文件。</v-card-text>
+              <v-card-text>
+                  <v-file-input
+                          v-model="upload.file"
+                          placeholder="选择文件"
+                          prepend-icon="mdi-file"
+                          label="选择文件"
+                  ></v-file-input>
+              </v-card-text>
+              <v-card-text>支持格式:{{upload.act_item.file_options.allow_ext}}</v-card-text>
+              <v-card-text>文件大小不超过{{upload.act_item.file_options.max_size}}</v-card-text>
+              <v-card-text>特殊要求：{{upload.act_item.file_options.note}}</v-card-text>
+              <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="upload.dialog=false" :disabled="this.upload.loading" right>关闭</v-btn>
+                  <v-btn color="blue darken-1" text @click="upload_signin" :loading="upload.loading" right>OK</v-btn>
+              </v-card-actions>
+          </v-card>
+      </v-dialog>
 
       </v-main>
+      
+      <!-- 菜单 -->
       <v-navigation-drawer
       v-model="drawer"
       absolute
@@ -502,10 +543,16 @@ export default {
             act_name:"",
             act_announcement:"",
             act_pic:"",
+            act_type:0,
             begin_time:"",
             end_time:"",
             status:1,
             statistic:{},
+            file_options:{
+              allow_ext:"",
+              max_size:"",
+              note:""
+            },
           }],
         },
         sign_btn:{
@@ -547,6 +594,12 @@ export default {
         version:"DevEnv",
         csrfHeader:{},
         noti_list:[],
+        upload:{
+          act_item:null,
+          dialog:false,
+          loading:false,
+          file:null,
+        }
       }
     },
     mounted:function(){
@@ -649,7 +702,87 @@ export default {
         })
         nProgress.done()
       },
+      upload_signin:function(){
+        if(this.upload.act_item==null){
+          this.error('未选择活动')
+          return
+        }
+
+        let _this = this
+        let param = new FormData(); 
+        param.append('file',this.upload.file);
+        this.upload.loading = true
+
+        //上传文件
+          this.axios({
+            method: 'post',
+            url: backEndUrl+'/api/user/act/upload?act_token='+_this.upload.act_item.act_token,
+            headers:{
+              'X-CSRF-TOKEN':_this.$cookies.get("CSRF-TOKEN"),
+              'Content-type':"multipart/form-data;charset:utf-8",
+            },
+            data:param
+          }).then(function (res) {
+              if (res.data.status == 0){
+                let upload_tk = res.data.data.upload_token
+
+                //普通签到接口
+                _this.axios({
+                    method: 'post',
+                    url: backEndUrl+'/api/user/act/signin',
+                    headers:_this.csrfHeader,
+                    data:{
+                        act_token:_this.upload.act_item.act_token,
+                        upload_token:upload_tk,
+                    }
+                }).then(function (res) {
+                    _this.upload.dialog = false
+                    _this.upload.loading = false
+                    if (res.data.status == 0){
+                        _this.success(res.data.data.text)
+                        _this.initData()
+                    }else{
+                        _this.error(res.data.msg)
+                    }
+                }).catch(function (error) {
+                    _this.error(error)
+                })
+              }else{
+                  _this.error(res.data.msg)
+                  _this.upload.loading = false
+                  return
+              }
+          }).catch(function (error) {
+              _this.error(error)
+              return
+          })
+      },
+      cancel:function(info_item){
+        let _this = this
+          this.axios({
+              method: 'post',
+              url: backEndUrl+'/api/user/act/cancel',
+              headers:_this.csrfHeader,
+              data:{
+                  act_token:info_item.act_token,
+              }
+          }).then(function (res) {
+              if (res.data.status == 0){
+                  _this.success(res.data.msg)
+                  _this.initData()
+              }else{
+                  _this.error(res.data.msg)
+              }
+          }).catch(function (error) {
+              _this.error(error)
+          })
+      },
       signin:function(info_item){
+          if (info_item.act_type==1){
+            this.upload.act_item = info_item
+            this.upload.dialog = true
+            return
+          }
           let _this = this
           this.axios({
               method: 'post',
@@ -657,6 +790,7 @@ export default {
               headers:_this.csrfHeader,
               data:{
                   act_token:info_item.act_token,
+                  upload_token:"",
               }
           }).then(function (res) {
               if (res.data.status == 0){
