@@ -46,12 +46,23 @@
 
               <v-list-item @click="show_act_list" link>
                 <v-list-item-icon>
-                  <v-icon>mdi-format-list-bulleted</v-icon>
+                  <v-icon>mdi-calendar-search</v-icon>
                 </v-list-item-icon>
                 <v-list-item-content>
                   <v-list-item-title>活动管理</v-list-item-title>
                 </v-list-item-content>
               </v-list-item>
+
+              <v-list-item @click="show_user_list" link>
+                <v-list-item-icon>
+                  <v-icon>mdi-account-cog-outline</v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title>班级成员管理</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+
+              
 
               <v-divider></v-divider>
 
@@ -72,7 +83,7 @@
 
 
       <!-- 提示框 -->
-      <v-dialog v-model="dialog.open" max-width="500px">
+      <v-dialog v-model="dialog.open" max-width="450px">
         <v-card>
           <v-card-title>{{dialog.title}}</v-card-title>
           <v-card-text>
@@ -86,7 +97,7 @@
       </v-dialog>
 
       <!-- 编辑班级信息 -->
-        <v-dialog v-model="editClassDialog" max-width="500px">
+        <v-dialog v-model="editClassDialog" max-width="450px">
             <v-card>
             <v-card-title>编辑班级信息</v-card-title>
             <v-card-text>
@@ -171,7 +182,7 @@
                                       <v-icon>mdi-calendar-cursor</v-icon>
                                     </v-list-item-avatar>
                                     <v-list-item-content>
-                                      <v-list-item-title v-html="item.name"></v-list-item-title>
+                                      <v-list-item-title >{{item.name}}</v-list-item-title>
                                       <v-list-item-subtitle >创建时间{{item.begin_time}}</v-list-item-subtitle>
                                       <v-list-item-subtitle >截止时间{{item.end_time}}</v-list-item-subtitle>
                                     </v-list-item-content>
@@ -183,6 +194,7 @@
                                     <v-list-item-action>
                                         <v-btn depressed @click="get_sts(item)">
                                           数据
+                                          <v-icon v-if="item.type==1" small right>mdi-cloud-check-outline</v-icon>
                                         </v-btn>
                                         <v-list-item-action-text class="text-center">创建人:{{item.create_by}}</v-list-item-action-text>
                                       </v-list-item-action>
@@ -215,6 +227,7 @@
                                     <v-list-item-action>
                                         <v-btn depressed @click="get_sts(item)">
                                           数据
+                                          <v-icon v-if="item.type==1" small right>mdi-cloud-check-outline</v-icon>
                                         </v-btn>
                                         <v-list-item-action-text class="text-center">创建人:{{item.create_by}}</v-list-item-action-text>
                                     </v-list-item-action>
@@ -305,6 +318,13 @@
                 label="是否启用活动"
                 class="my-0"
                 ></v-switch>
+
+                <v-switch
+                v-model="act_info.daily_notify"
+                inset
+                label="是否启用每日提醒"
+                class="my-0"
+                ></v-switch>
                 
                 <v-textarea
                     label="活动公告"
@@ -339,7 +359,7 @@
                 <v-container>
                     <v-card
                     class="mx-auto"
-                    max-width="400"
+                    max-width="450"
                     >
                     <v-img
                         class="white--text align-end"
@@ -370,6 +390,13 @@
                         text
                         >
                         签到
+                        <v-icon
+                            right
+                            dark
+                            v-if="act_info.upload.enabled"
+                        >
+                            mdi-cloud-upload
+                        </v-icon>
                         </v-btn>
                         <v-btn
                         color="primary"
@@ -382,6 +409,65 @@
                     </v-card>
                 </v-container>
                 <!-- 预览结束 -->
+
+                <!-- 上传设置 -->
+                <v-card v-if="act_edit_mode=='new'" class="my-3">
+                    <v-card-title>文件上传设置</v-card-title>
+                    <v-card-subtitle>
+                        系统默认会将用户上传的文件名改为用户的姓名，如果需要保留原文件名，请关闭“上传后重新命名”开关。
+                        <br>
+                        活动一旦发布将无法更改下列设置!
+                    </v-card-subtitle>
+                    <v-card-text>
+                        <v-switch
+                        v-model="act_info.upload.enabled"
+                        inset
+                        label="是否需要上传文件"
+                        ></v-switch>
+                    </v-card-text>
+                    
+                    
+                    <v-card-text v-if="act_info.upload.enabled">
+                        <v-radio-group
+                        v-model="act_info.upload.type"
+                        label="文件类型"
+                        >
+                        <v-radio
+                            label="图片文件(png,jpg)"
+                            value="image"
+                        ></v-radio>
+                        <v-radio
+                            label="压缩包(zip,rar)"
+                            value="archive"
+                        ></v-radio>
+                        </v-radio-group>
+                        <v-slider
+                        v-model="act_info.upload.max_size"
+                        label="文件大小不超过(MB)"
+                        thumb-color="green lighten-1"
+                        thumb-label="always"
+                        max="100"
+                        min="1"
+                        ></v-slider>
+                        <v-switch
+                        v-model="act_info.upload.rename"
+                        inset
+                        label="上传后重新命名"
+                        class="my-0"
+                        ></v-switch>
+                    </v-card-text>
+                </v-card>
+                <v-card v-if="act_edit_mode=='edit' && act_info.upload.enabled==true" class="my-3">
+                    <v-card-title>文件上传设置浏览</v-card-title>
+                    <v-card-text>
+                        文件类型：<code>{{upload_type[act_info.upload.type]}}</code>
+                        <br>
+                        大小限制：<code>{{act_info.upload.max_size}} MB</code>
+                        <br>
+                        上传后是否重新命名：<code>{{act_info.upload.rename}}</code>
+                    </v-card-text>
+                </v-card>    
+                <!-- 上传设置结束 -->
 
                 <!-- 结束时间选择 -->
                 <v-menu
@@ -465,7 +551,7 @@
         </v-card>
         </v-dialog>
         
-        <!-- 活动统计数据 -->
+        <!-- 活动统计数据 sts_dialog -->
         <v-dialog
             v-model="sts_dialog"
             fullscreen
@@ -493,6 +579,28 @@
             </div>
             </div>
             <v-card class="ma-2">
+            <v-card-text>
+                <v-btn
+                    depressed
+                    @click="export_file"
+                    v-if="export_data.act_id != 0 && export_data.url ==''"
+                    :loading="export_data.loading"
+                    class="ma-3"
+                >
+                导出所有文件
+                </v-btn>
+                <v-btn
+                    depressed
+                    color="primary"
+                    target="_blank"
+                    :href="export_data.url"
+                    v-if="export_data.act_id != 0 && export_data.url !=''"
+                    class="ma-3"
+                >
+                下载
+                </v-btn>
+                <small v-if="export_data.act_id != 0 && export_data.url !=''">下载链接有效期为5分钟。</small>
+            </v-card-text>
             <v-list dense class="pa-2">
                 <v-subheader>未完成</v-subheader>
                 <v-list-item-group
@@ -533,6 +641,62 @@
             </v-list>
             </v-card>
             
+        </v-card>
+        </v-dialog>
+
+        <!-- 用户管理 user_dialog -->
+        <v-dialog
+            v-model="user_dialog"
+            fullscreen
+            hide-overlay
+            transition="dialog-bottom-transition"
+        >
+        <v-card class="pa-4">
+            <v-toolbar
+            dark
+            color="info"
+            >
+                <v-btn
+                icon
+                dark
+                @click="user_dialog = false"
+                >
+                <v-icon>mdi-close</v-icon>
+                </v-btn>
+                <v-toolbar-title>班级成员管理</v-toolbar-title>
+                <v-spacer></v-spacer>
+            </v-toolbar>
+
+             <v-alert
+            shaped
+            type="info"
+            class="mx-auto ma-4"
+            max-width="450px"
+            >
+            【踢出班级】:点击按钮后，将立即清除用户的签到记录，记录无法恢复。用户将重新回到“初始化”阶段。谨慎操作！
+            </v-alert>
+            <v-card class="mx-auto ma-4" max-width="450px">
+                <v-card-title>
+                所有班级成员
+                <v-spacer></v-spacer>
+                <v-text-field
+                    v-model="userlist_search"
+                    append-icon="mdi-magnify"
+                    label="搜索"
+                    single-line
+                    hide-details
+                ></v-text-field>
+                </v-card-title>
+                <v-data-table
+                :headers="userlist_headers"
+                :items="user_list"
+                :search="userlist_search"
+                >
+                    <template v-slot:[`item.actions`]="{ item }">
+                        <v-btn depressed small class="ma-2" @click="op_user('del',item)">踢出班级</v-btn>
+                    </template>
+                </v-data-table>
+            </v-card>
         </v-card>
         </v-dialog>
 
@@ -577,18 +741,27 @@ export default {
       act_list_dialog:false,
       loading_dialog:false,
       sts_dialog:false,
+      user_dialog:false,
+      editUserDialog:false,
       act_list_tab:0,
       act_info:{
           name:"",
           active:false,
+          daily_notify:true,
           pic:"",
           announcement:"",
           cheer_text:"",
           end_time:{
               d:"",
               t:"",
-          }
-      },
+          },
+          upload:{
+            enabled:false,
+            type:"",
+            max_size:5,
+            rename:true
+          },
+      },    
       sts:{
         done:0,
         total:0,
@@ -603,6 +776,26 @@ export default {
         end_time_menu:false
         },
         csrfHeader:{},
+        user_list:[],
+        userlist_search:'',
+        userlist_headers: [
+          {
+            text: 'ID',
+            align: 'start',
+            value: 'id',
+          },
+          { text: '姓名', value: 'name' },
+          { text: '操作', value: 'actions',sortable: false,},
+        ],
+        upload_type:{
+            "image":"图片",
+            "archive":"压缩文件"
+        },
+        export_data:{
+            act_id:0,
+            loading:false,
+            url:""
+        },
       }
     },
     mounted:function(){
@@ -659,11 +852,15 @@ export default {
         new_act:function(){
             this.act_info.name = ""
             this.act_info.active = true
+            this.act_info.daily_notify = true
             this.act_info.announcement = ""
             this.act_info.pic = ""
             this.act_info.cheer_text = "恭喜完成"
             this.act_info.end_time.d = ""
             this.act_info.end_time.t = ""
+            this.act_info.upload.enabled = false
+            this.act_info.upload.max_size = 5
+            this.act_info.upload.rename = true
 
             this.act_dialog = true
             this.act_edit_mode = "new"
@@ -682,7 +879,6 @@ export default {
             }).then(function (res) {
                 if (res.data.status == 0){
                     _this.act_list = res.data.data
-                    _this.act_list_dialog = true
                     _this.loading_dialog = false
                 }else{
                     _this.error(res.data.msg)
@@ -690,6 +886,7 @@ export default {
             }).catch(function (error) {
                 _this.error(error)
             })
+            _this.act_list_dialog = true
         },
         save_class:function(){
             let _this = this
@@ -756,12 +953,106 @@ export default {
                     _this.sts.total = res.data.data.total
                     _this.sts.unfinished_list = res.data.data.unfinished_list
                     _this.sts.finished_list = res.data.data.finished_list
+
+                    if(info_item.type == 1){
+                        _this.export_data.act_id = info_item.act_id
+                    }else{
+                        _this.export_data.act_id = 0
+                    }
+                    _this.export_data.url = ""
+                    
                     _this.sts_dialog = true
                 }else{
                     _this.error(res.data.msg)
                 }
             })
             .catch(function (error) {
+                // 处理错误情况
+                _this.error(error)
+            })
+        },
+        show_user_list:function(){
+            let _this = this
+            //获取用户
+            this.axios({
+                method: 'get',
+                url: backEndUrl+'/api/admin/user/list',
+            }).then(function (res) {
+                // 处理成功情况
+                if (res.data.status == 0){
+                    _this.user_list = res.data.data.data
+                    _this.user_dialog = true
+                }else{
+                    _this.error(res.data.msg)
+                }
+            }).catch(function (error) {
+                // 处理错误情况
+                _this.error(error)
+            })
+        },
+        get_user_list:function(){
+            let _this = this
+            //获取用户
+            this.axios({
+                method: 'get',
+                url: backEndUrl+'/api/admin/user/list',
+            }).then(function (res) {
+                // 处理成功情况
+                if (res.data.status == 0){
+                    _this.user_list = res.data.data.data
+                }else{
+                    _this.error(res.data.msg)
+                }
+            }).catch(function (error) {
+                // 处理错误情况
+                _this.error(error)
+            })
+        },
+        op_user:function(type,item){
+             let _this = this
+            if (type!="del"){
+                this.error("暂不支持此操作")
+                return
+            }
+            this.axios({
+                method: 'post',
+                url: backEndUrl+"/api/admin/user/del",
+                headers:_this.csrfHeader,
+                data:{
+                    user_id:item.user_id,
+                    sign:item.sign
+                },
+            }).then(function (res) {
+                if (res.data.status == 0){
+                    _this.get_user_list()
+                    _this.success("操作成功")
+                }else{
+                    _this.error(res.data.msg)
+                }
+            }).catch(function (error) {
+                // 处理错误情况
+                _this.error(error)
+            })
+
+        },
+        export_file:function(){
+            let _this = this
+            this.export_data.loading = true
+            this.axios({
+                method: 'post',
+                url: backEndUrl+"/api/admin/act/export",
+                headers:_this.csrfHeader,
+                data:{
+                    act_id:_this.export_data.act_id,
+                },
+            }).then(function (res) {
+                if (res.data.status == 0){
+                    _this.export_data.url = res.data.data.download_url
+                }else{
+                    _this.error(res.data.msg)
+                }
+                _this.export_data.loading = false
+            }).catch(function (error) {
                 // 处理错误情况
                 _this.error(error)
             })
