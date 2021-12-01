@@ -680,24 +680,37 @@
                 所有班级成员
                 <v-spacer></v-spacer>
                 <v-text-field
-                    v-model="userlist_search"
-                    append-icon="mdi-magnify"
-                    label="搜索"
-                    single-line
-                    hide-details
-                ></v-text-field>
-                </v-card-title>
-                <v-data-table
-                :headers="userlist_headers"
-                :items="user_list"
-                :search="userlist_search"
-                >
-                    <template v-slot:[`item.actions`]="{ item }">
-                        <v-btn depressed small class="ma-2" @click="op_user('del',item)">踢出班级</v-btn>
-                    </template>
-                </v-data-table>
+                        v-model="userlist_search"
+                        append-icon="mdi-magnify"
+                        label="搜索"
+                        single-line
+                        hide-details
+                    ></v-text-field>
+                    </v-card-title>
+                <v-card-text>
+                    <v-data-table
+                    :headers="userlist_headers"
+                    :items="user_list"
+                    :search="userlist_search"
+                    >
+                        <template v-slot:[`item.actions`]="{ item }">
+                            <v-btn depressed small class="ma-2" @click="confirn_delete(item)">踢出班级</v-btn>
+                        </template>
+                    </v-data-table>
+                </v-card-text>
             </v-card>
         </v-card>
+        </v-dialog>
+
+        <v-dialog v-model="dialogDelete.open" max-width="500px">
+            <v-card>
+                <v-card-title class="text-h5">确定要删除该用户?</v-card-title>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="dialogDelete.open=false">取消</v-btn>
+                    <v-btn color="blue darken-1" text @click="op_user">OK</v-btn>
+                </v-card-actions>
+            </v-card>
         </v-dialog>
 
     </v-main>
@@ -743,6 +756,10 @@ export default {
       sts_dialog:false,
       user_dialog:false,
       editUserDialog:false,
+      dialogDelete:{
+          item:null,
+          open:false
+      },
       act_list_tab:0,
       act_info:{
           name:"",
@@ -1008,19 +1025,16 @@ export default {
                 _this.error(error)
             })
         },
-        op_user:function(type,item){
+        op_user:function(){
              let _this = this
-            if (type!="del"){
-                this.error("暂不支持此操作")
-                return
-            }
+            
             this.axios({
                 method: 'post',
                 url: backEndUrl+"/api/admin/user/del",
                 headers:_this.csrfHeader,
                 data:{
-                    user_id:item.user_id,
-                    sign:item.sign
+                    user_id:_this.dialogDelete.item.user_id,
+                    sign:_this.dialogDelete.item.sign
                 },
             }).then(function (res) {
                 if (res.data.status == 0){
@@ -1034,6 +1048,10 @@ export default {
                 _this.error(error)
             })
 
+        },
+        confirn_delete:function(item){
+            this.dialogDelete.item = item
+            this.dialogDelete.open = true
         },
         export_file:function(){
             let _this = this
