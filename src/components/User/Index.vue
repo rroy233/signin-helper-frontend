@@ -75,8 +75,17 @@
     
         <v-card-actions>
           <v-btn
+            color="red darken-2"
+            v-if="info_item.status==1"
+            @click="cancel(info_item)"
+            large
+            text
+          >
+          撤销签到
+          </v-btn>
+          <v-btn
             color="orange"
-            :disabled="info_item.status==1"
+            v-if="info_item.status==0"
             @click="signin(info_item)"
             large
             text
@@ -99,13 +108,19 @@
             完成情况
           </v-btn>
           <v-btn
-            color="red darken-2"
-            v-if="info_item.status==1"
-            @click="cancel(info_item)"
+            color="secondary"
+            v-if="info_item.act_type==1&&info_item.status==1"
+            @click="view_upload(info_item)"
             large
             text
           >
-          取消签到
+          我的文件
+          <v-icon
+            right
+            dark
+          >
+            mdi-cloud-search
+          </v-icon>
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -262,7 +277,8 @@
           </div>
         </div>
         <v-card class="ma-2">
-          <v-list dense class="pa-2">
+          <v-card-text>
+            <v-list dense class="pa-2">
             <v-subheader>未完成</v-subheader>
             <v-list-item-group
                 color="primary"
@@ -299,6 +315,8 @@
                 </v-list-item>
             </v-list-item-group>
           </v-list>
+          </v-card-text>
+          
         </v-card>
         
       </v-card>
@@ -440,6 +458,34 @@
           </v-card>
       </v-dialog>
 
+      <!-- 上传文件 -->
+      <v-dialog v-model="upload_preview.open" max-width="500px" v-if="upload_preview.open == true">
+          <v-card>
+              <v-card-title class="text-h5">文件预览</v-card-title>
+              <v-card-text v-if="upload_preview.item.upload.type=='image'">
+                <!-- 图片展示 -->
+                <v-img
+                  max-width="400"
+                  class="ma-auto"
+                  :src="upload_preview.item.upload.img_url"
+                ></v-img>
+              </v-card-text>
+              <v-card-text v-if="upload_preview.item.upload.type=='other'">
+                <!-- 下载 -->
+                <v-btn depressed :href="upload_preview.item.upload.download_url" target="_blank">下载</v-btn>
+              </v-card-text>
+              <v-card-text>
+                文件若上传错误可以点击“撤销签到”并重新上传。
+                <br>
+                图片/下载地址预览有效期为5分钟。
+              </v-card-text>
+              <v-card-actions>
+                  <v-spacer></v-spacer>
+                  <v-btn color="blue darken-1" text @click="upload_preview.open=false" right>关闭</v-btn>
+              </v-card-actions>
+          </v-card>
+      </v-dialog>
+
       </v-main>
       
       <!-- 菜单 -->
@@ -536,6 +582,10 @@ export default {
         actQueryDialog:false,
         bind_wechat_dialog:false,
         sts_dialog:false,
+        upload_preview:{
+          open:false,
+          item:null,
+        },
         act_info:{
           total:0,
           list:[{
@@ -553,6 +603,12 @@ export default {
               max_size:"",
               note:""
             },
+            upload:{
+              enabled:false,
+              type:"",
+              img_url:"",
+              download_url:""
+            }
           }],
         },
         sign_btn:{
@@ -802,6 +858,10 @@ export default {
           }).catch(function (error) {
               _this.error(error)
           })
+      },
+      view_upload:function(info_item){
+        this.upload_preview.item = info_item
+        this.upload_preview.open = true
       },
       get_sts:function(info_item){
         let _this = this
