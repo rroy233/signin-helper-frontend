@@ -420,7 +420,7 @@
       <v-dialog v-model="upload.dialog" max-width="500px" v-if="upload.dialog == true">
           <v-card>
               <v-card-title class="text-h5">您需要上传文件</v-card-title>
-              <v-card-text>请仔细阅读活动公告，上传所需文件。请勿上传含有违反中国大陆法律内容的文件。</v-card-text>
+              <v-card-text>请仔细阅读活动公告，上传所需文件。请勿上传含有违反中国大陆和香港法律内容的文件。</v-card-text>
               <v-card-text>
                   <v-file-input
                           v-model="upload.file"
