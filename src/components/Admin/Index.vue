@@ -1043,6 +1043,7 @@ export default {
                 }else{
                     _this.error(res.data.msg)
                 }
+                _this.dialogDelete.open=false
             }).catch(function (error) {
                 // 处理错误情况
                 _this.error(error)
