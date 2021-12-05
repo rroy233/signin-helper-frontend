@@ -425,22 +425,46 @@
                         label="是否需要上传文件"
                         ></v-switch>
                     </v-card-text>
-                    
-                    
                     <v-card-text v-if="act_info.upload.enabled">
-                        <v-radio-group
-                        v-model="act_info.upload.type"
-                        label="文件类型"
+                        <div class="text-subtitle-2">文件类型(可多选)：</div>
+                        <v-row>
+                        <v-col
+                            cols="12"
+                            class="d-flex justify-start flex-wrap"
                         >
-                        <v-radio
+                            <v-checkbox
+                            v-model="act_info.upload.type"
                             label="图片文件(png,jpg)"
                             value="image"
-                        ></v-radio>
-                        <v-radio
+                            class="ma-2"
+                            ></v-checkbox>
+                            <v-checkbox
+                            v-model="act_info.upload.type"
                             label="压缩包(zip,rar)"
                             value="archive"
-                        ></v-radio>
-                        </v-radio-group>
+                            class="ma-2"
+                            ></v-checkbox>
+                            <v-checkbox
+                            v-model="act_info.upload.type"
+                            label="word文档(doc,docx)"
+                            value="word"
+                            class="ma-2"
+                            ></v-checkbox>
+                            <v-checkbox
+                            v-model="act_info.upload.type"
+                            label="PowerPoint演示文档(ppt,pptx)"
+                            value="ppt"
+                            class="ma-2"
+                            ></v-checkbox>
+                            <v-checkbox
+                            v-model="act_info.upload.type"
+                            label="Excel表格(xls,xlsx)"
+                            value="excel"
+                            class="ma-2"
+                            ></v-checkbox>
+                        </v-col>
+                        </v-row>
+                        
                         <v-slider
                         v-model="act_info.upload.max_size"
                         label="文件大小不超过(MB)"
@@ -460,13 +484,13 @@
                 <v-card v-if="act_edit_mode=='edit' && act_info.upload.enabled==true" class="my-3">
                     <v-card-title>文件上传设置浏览</v-card-title>
                     <v-card-text>
-                        文件类型：<code>{{upload_type[act_info.upload.type]}}</code>
-                        <br>
-                        大小限制：<code>{{act_info.upload.max_size}} MB</code>
-                        <br>
-                        上传后是否重新命名：<code>{{act_info.upload.rename}}</code>
+                        <v-row class="d-flex flex-wrap">
+                            <v-col><div class="text-subtitle-2">文件类型：</div><v-chip v-for="(item,i) in act_info.upload.type" :key="i" class="ma-2" label>{{item}}</v-chip></v-col>
+                            <v-col><div class="text-subtitle-2">大小限制：</div><v-chip label>{{act_info.upload.max_size}} MB</v-chip></v-col>
+                            <v-col><div class="text-subtitle-2">上传后是否重新命名：</div><v-chip label>{{act_info.upload.rename}}</v-chip></v-col>
+                        </v-row>
                     </v-card-text>
-                </v-card>    
+                </v-card>
                 <!-- 上传设置结束 -->
 
                 <!-- 结束时间选择 -->
@@ -702,6 +726,7 @@
         </v-card>
         </v-dialog>
 
+        <!-- 删除用户 dialogDelete -->
         <v-dialog v-model="dialogDelete.open" max-width="500px">
             <v-card>
                 <v-card-title class="text-h5">确定要删除该用户?</v-card-title>
@@ -774,7 +799,7 @@ export default {
           },
           upload:{
             enabled:false,
-            type:"",
+            type:[],
             max_size:5,
             rename:true
           },
@@ -804,10 +829,6 @@ export default {
           { text: '姓名', value: 'name' },
           { text: '操作', value: 'actions',sortable: false,},
         ],
-        upload_type:{
-            "image":"图片",
-            "archive":"压缩文件"
-        },
         export_data:{
             act_id:0,
             loading:false,
@@ -878,6 +899,7 @@ export default {
             this.act_info.upload.enabled = false
             this.act_info.upload.max_size = 5
             this.act_info.upload.rename = true
+            this.act_info.upload.type = []
 
             this.act_dialog = true
             this.act_edit_mode = "new"
