@@ -1,6 +1,73 @@
 <template>
   <div>
     <v-app>
+
+      <!-- 菜单 -->
+      <v-navigation-drawer
+      app
+      v-model="drawer"
+    >
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="text-h6">
+            功能菜单
+          </v-list-item-title>
+          <v-list-item-subtitle>
+            用户面板
+          </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
+
+      <v-divider></v-divider>
+
+      <v-list
+        nav
+      >
+      <v-list-item-group
+        v-model="group"
+        active-class="deep-purple--text text--accent-4"
+      >
+        <v-list-item>
+          <v-list-item-icon>
+            <v-icon>mdi-calendar-check</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>主页</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-icon>
+            <v-icon>mdi-calendar-search</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>签到记录</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item>
+          <v-list-item-icon>
+            <v-icon>mdi-account</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>我的</v-list-item-title>
+        </v-list-item>
+
+        <v-divider></v-divider>
+
+        <v-list-item to="/admin" link v-if="myInfo.is_admin">
+          <v-list-item-icon>
+            <v-icon>mdi-account-tie</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>管理员面板</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item @click="logout" link>
+          <v-list-item-icon>
+            <v-icon>mdi-logout</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>退出登录</v-list-item-title>
+        </v-list-item>
+      </v-list-item-group>
+    </v-list>
+    </v-navigation-drawer>
+
+
       <v-app-bar app>
         <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
         <v-toolbar-title>签到系统</v-toolbar-title>
@@ -58,7 +125,8 @@
           gradient="to top right, rgba(0,0,0,.7), rgba(240,255,255,.3)"
         >
           <v-card-title class="font-weight-black">
-            {{info_item.act_name}}
+            {{info_item.act_name}}&nbsp;
+            <v-icon v-if="info_item.noti_enabled==0" dark>mdi-bell-off-outline</v-icon>
           </v-card-title>
           <v-card-subtitle class="text-caption">
             {{info_item.statistic.info}}
@@ -75,11 +143,11 @@
     
         <v-card-actions>
           <v-btn
-            color="red darken-2"
             v-if="info_item.status==1"
             @click="cancel(info_item)"
             large
-            text
+            color="error"
+            plain
           >
           撤销签到
           </v-btn>
@@ -106,6 +174,12 @@
             text
           >
             完成情况
+            <v-icon
+            right
+            dark
+          >
+            mdi-chart-box
+          </v-icon>
           </v-btn>
           <v-btn
             color="secondary"
@@ -488,72 +562,7 @@
 
       </v-main>
       
-      <!-- 菜单 -->
-      <v-navigation-drawer
-      v-model="drawer"
-      absolute
-      temporary
-    >
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="text-h6">
-            功能菜单
-          </v-list-item-title>
-          <v-list-item-subtitle>
-            用户面板
-          </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-divider></v-divider>
-
-      <v-list
-        nav
-      >
-      <v-list-item-group
-        v-model="group"
-        active-class="deep-purple--text text--accent-4"
-      >
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon>mdi-calendar-check</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>主页</v-list-item-title>
-        </v-list-item>
-
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon>mdi-calendar-search</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>签到记录</v-list-item-title>
-        </v-list-item>
-
-        <v-list-item>
-          <v-list-item-icon>
-            <v-icon>mdi-account</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>我的</v-list-item-title>
-        </v-list-item>
-
-        <v-divider></v-divider>
-
-        <v-list-item to="/admin" link v-if="myInfo.is_admin">
-          <v-list-item-icon>
-            <v-icon>mdi-account-tie</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>管理员面板</v-list-item-title>
-        </v-list-item>
-
-        <v-list-item @click="logout" link>
-          <v-list-item-icon>
-            <v-icon>mdi-logout</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>退出登录</v-list-item-title>
-        </v-list-item>
-      </v-list-item-group>
-    </v-list>
-    </v-navigation-drawer>
-
+      
     <v-footer app>
     <!-- -->
     <div class="text-caption py-3">{{version}} &copy;2021 ROY233<br><a href="https://hub.fastgit.org/rroy233/signin-helper" class="text-decoration-none" target="_blank">Github</a> | <a href="https://hub.fastgit.org/rroy233/signin-helper/blob/main/CHANGELOG.md" class="text-decoration-none" target="_blank">更新日志</a></div>
@@ -594,6 +603,7 @@ export default {
             act_announcement:"",
             act_pic:"",
             act_type:0,
+            noti_enabled:0,
             begin_time:"",
             end_time:"",
             status:1,
