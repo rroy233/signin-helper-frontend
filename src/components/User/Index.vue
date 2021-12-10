@@ -512,7 +512,7 @@
       <v-dialog v-model="upload.dialog" max-width="500px" v-if="upload.dialog == true">
           <v-card>
               <v-card-title class="text-h5">您需要上传文件</v-card-title>
-              <v-card-text>请仔细阅读活动公告，上传所需文件。请勿上传含有违反中国大陆和香港法律内容的文件。</v-card-text>
+              <v-card-text>请仔细阅读活动公告，上传所需文件。<br>请勿上传含有违反中国大陆和香港法律内容的文件。</v-card-text>
               <v-card-text>
                   <v-file-input
                           v-model="upload.file"
@@ -521,7 +521,7 @@
                           label="选择文件"
                   ></v-file-input>
               </v-card-text>
-              <v-card-text>支持格式:{{upload.act_item.file_options.allow_ext}}</v-card-text>
+              <v-card-text>支持格式：{{upload.act_item.file_options.allow_ext}}</v-card-text>
               <v-card-text>文件大小不超过{{upload.act_item.file_options.max_size}}</v-card-text>
               <v-card-text>特殊要求：{{upload.act_item.file_options.note}}</v-card-text>
               <v-card-actions>
@@ -532,7 +532,7 @@
           </v-card>
       </v-dialog>
 
-      <!-- 上传文件 -->
+      <!-- 文件预览 -->
       <v-dialog v-model="upload_preview.open" max-width="500px" v-if="upload_preview.open == true">
           <v-card>
               <v-card-title class="text-h5">文件预览</v-card-title>
@@ -542,7 +542,20 @@
                   max-width="400"
                   class="ma-auto"
                   :src="upload_preview.item.upload.img_url"
-                ></v-img>
+                >
+                  <template v-slot:placeholder>
+                    <v-row
+                      class="fill-height ma-0"
+                      align="center"
+                      justify="center"
+                    >
+                      <v-progress-circular
+                        indeterminate
+                        color="blue"
+                      ></v-progress-circular>
+                    </v-row>
+                  </template>
+                </v-img>
               </v-card-text>
               <v-card-text v-if="upload_preview.item.upload.type=='other'">
                 <!-- 下载 -->
@@ -551,7 +564,7 @@
               <v-card-text>
                 文件若上传错误可以点击“撤销签到”并重新上传。
                 <br>
-                图片/下载地址预览有效期为5分钟。
+                图片/文件下载临时地址有效期为5分钟。
               </v-card-text>
               <v-card-actions>
                   <v-spacer></v-spacer>
@@ -565,7 +578,7 @@
       
     <v-footer app>
     <!-- -->
-    <div class="text-caption py-3">{{version}} &copy;2021 ROY233<br><a href="https://hub.fastgit.org/rroy233/signin-helper" class="text-decoration-none" target="_blank">Github</a> | <a href="https://hub.fastgit.org/rroy233/signin-helper/blob/main/CHANGELOG.md" class="text-decoration-none" target="_blank">更新日志</a></div>
+    <div class="text-caption py-3">{{version}} &copy;2021 ROY233<br><a href="https://github.com/rroy233/signin-helper" class="text-decoration-none" target="_blank">Github</a> | <a href="https://hub.fastgit.org/rroy233/signin-helper/blob/main/CHANGELOG.md" class="text-decoration-none" target="_blank">更新日志</a></div>
     </v-footer>
     </v-app>
   </div>
