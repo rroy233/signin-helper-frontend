@@ -446,7 +446,7 @@
                             ></v-checkbox>
                             <v-checkbox
                             v-model="act_info.upload.type"
-                            label="word文档(doc,docx)"
+                            label="Word文档(doc,docx)"
                             value="word"
                             class="ma-2"
                             ></v-checkbox>
@@ -460,6 +460,12 @@
                             v-model="act_info.upload.type"
                             label="Excel表格(xls,xlsx)"
                             value="excel"
+                            class="ma-2"
+                            ></v-checkbox>
+                            <v-checkbox
+                            v-model="act_info.upload.type"
+                            label="PDF文档(pdf)"
+                            value="pdf"
                             class="ma-2"
                             ></v-checkbox>
                         </v-col>
@@ -486,8 +492,8 @@
                     <v-card-text>
                         <v-row class="d-flex flex-wrap">
                             <v-col><div class="text-subtitle-2">文件类型：</div><v-chip v-for="(item,i) in act_info.upload.type" :key="i" class="ma-2" label>{{item}}</v-chip></v-col>
-                            <v-col><div class="text-subtitle-2">大小限制：</div><v-chip label>{{act_info.upload.max_size}} MB</v-chip></v-col>
-                            <v-col><div class="text-subtitle-2">上传后是否重新命名：</div><v-chip label>{{act_info.upload.rename}}</v-chip></v-col>
+                            <v-col><div class="text-subtitle-2">大小限制：</div><v-chip label class="ma-2" >{{act_info.upload.max_size}} MB</v-chip></v-col>
+                            <v-col><div class="text-subtitle-2">上传后是否重新命名：</div><v-chip label class="ma-2" >{{act_info.upload.rename}}</v-chip></v-col>
                         </v-row>
                     </v-card-text>
                 </v-card>
@@ -601,13 +607,16 @@
             <div class="text-caption">
                 数据统计刷新存在0~10s延迟。
             </div>
+            <div class="text-caption" v-if="export_data.act_id != 0">
+                当前活动已开启文件上传功能。<br>点击“已完成”用户列表项可查看用户上传的文件。<br>点击“导出所有文件”可将用户上传的文件打包下载。
+            </div>
             </div>
             <v-card class="ma-2">
-            <v-card-text>
+            <v-card-text v-if="export_data.act_id != 0">
                 <v-btn
                     depressed
                     @click="export_file"
-                    v-if="export_data.act_id != 0 && export_data.url ==''"
+                    v-if="export_data.url ==''"
                     :loading="export_data.loading"
                     class="ma-3"
                 >
@@ -618,12 +627,12 @@
                     color="primary"
                     target="_blank"
                     :href="export_data.url"
-                    v-if="export_data.act_id != 0 && export_data.url !=''"
+                    v-if="export_data.url !=''"
                     class="ma-3"
                 >
                 下载
                 </v-btn>
-                <small v-if="export_data.act_id != 0 && export_data.url !=''">下载链接有效期为5分钟。</small>
+                <small v-if="export_data.url !=''">下载链接有效期为5分钟。</small>
             </v-card-text>
             <v-list dense class="pa-2">
                 <v-subheader>未完成</v-subheader>
@@ -646,8 +655,11 @@
                 <v-divider></v-divider>
 
                 <v-subheader>已完成</v-subheader>
+
+                <!-- 无文件 -->
                 <v-list-item-group
                     color="primary"
+                    v-if="export_data.act_id ==0"
                 >
                     <v-list-item
                     v-for="(item,i) in sts.finished_list"
@@ -662,6 +674,28 @@
                     </v-list-item-content>
                     </v-list-item>
                 </v-list-item-group>
+                <!-- 无文件 -->
+
+                <!-- 有文件预览 -->
+                <v-list-item-group
+                    color="primary"
+                    v-if="export_data.act_id !=0"
+                >
+                    <v-list-item
+                    v-for="(item,i) in sts.finished_list"
+                    :key="i"
+                    @click="get_file_preview(item)"
+                    >
+                    <v-list-item-icon>
+                        <v-icon v-text="item.id"></v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                        <v-list-item-title>{{item.user_name}} (UID:{{item.user_id}})</v-list-item-title>
+                        <v-list-item-subtitle>完成时间:{{item.date_time}}&nbsp;<v-icon small>mdi-cloud-check-outline</v-icon></v-list-item-subtitle>
+                    </v-list-item-content>
+                    </v-list-item>
+                </v-list-item-group>
+                <!-- 有文件预览 -->
             </v-list>
             </v-card>
             
@@ -734,6 +768,45 @@
                     <v-spacer></v-spacer>
                     <v-btn color="blue darken-1" text @click="dialogDelete.open=false">取消</v-btn>
                     <v-btn color="blue darken-1" text @click="op_user">OK</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+
+        <!-- 文件预览 -->
+        <v-dialog v-model="upload_preview.open" max-width="500px" v-if="upload_preview.open == true">
+            <v-card>
+                <v-card-title class="text-h5">用户文件预览</v-card-title>
+                <v-card-text v-if="upload_preview.item.type=='image'">
+                    <!-- 图片展示 -->
+                    <v-img
+                    max-width="400"
+                    class="ma-auto"
+                    :src="upload_preview.item.img_url"
+                    >
+                    <template v-slot:placeholder>
+                        <v-row
+                        class="fill-height ma-0"
+                        align="center"
+                        justify="center"
+                        >
+                        <v-progress-circular
+                            indeterminate
+                            color="blue"
+                        ></v-progress-circular>
+                        </v-row>
+                    </template>
+                    </v-img>
+                </v-card-text>
+                <v-card-text v-if="upload_preview.item.type=='other'">
+                    <!-- 下载 -->
+                    <v-btn depressed :href="upload_preview.item.download_url" target="_blank">下载</v-btn>
+                </v-card-text>
+                <v-card-text>
+                    图片/文件下载临时地址有效期为5分钟。
+                </v-card-text>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="blue darken-1" text @click="upload_preview.open=false" right>关闭</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -833,6 +906,10 @@ export default {
             act_id:0,
             loading:false,
             url:""
+        },
+        upload_preview:{
+          open:false,
+          item:null,
         },
       }
     },
@@ -1093,6 +1170,28 @@ export default {
                     _this.error(res.data.msg)
                 }
                 _this.export_data.loading = false
+            }).catch(function (error) {
+                // 处理错误情况
+                _this.error(error)
+            })
+        },
+        get_file_preview:function(sts_item){
+            let _this = this
+            this.axios({
+                method: 'post',
+                url: backEndUrl+"/api/admin/act/viewFile",
+                headers:_this.csrfHeader,
+                data:{
+                    act_id:_this.export_data.act_id,
+                    user_id:sts_item.user_id,
+                },
+            }).then(function (res) {
+                if (res.data.status == 0){
+                    _this.upload_preview.item = res.data.data
+                    _this.upload_preview.open = true
+                }else{
+                    _this.error(res.data.msg)
+                }
             }).catch(function (error) {
                 // 处理错误情况
                 _this.error(error)
