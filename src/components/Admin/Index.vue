@@ -349,18 +349,14 @@
                     使用「随机图片」功能系统将从Pixiv随机抓取图片，下方将自动填入"预览地址"，保存活动后图片地址将转为"永久地址"，图片有效期90天。
                 </div>
                 
-                <v-row class="d-flex flex-wrap">
-                    <v-col cols="9">
-                        <v-text-field
-                            label="头图地址"
-                            v-model="act_info.pic"
-                            outlined
-                        ></v-text-field>
-                    </v-col>
-                    <v-col cols="2" class="my-3">
-                        <v-btn depressed large :loading="get_rd_pic_btn_loading" @click="get_random_pic">随机图片</v-btn>
-                    </v-col>
-                </v-row>
+                <div class="d-flex flex-wrap">
+                    <v-text-field
+                        label="头图地址"
+                        v-model="act_info.pic"
+                        outlined
+                    ></v-text-field>
+                    <v-btn depressed large :loading="get_rd_pic_btn_loading" @click="get_random_pic" class="ma-3">随机图片</v-btn>
+                </div>
 
 
                 <!-- 预览 -->
