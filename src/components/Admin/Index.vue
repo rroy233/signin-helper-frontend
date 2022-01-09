@@ -346,13 +346,21 @@
                     <br>
                     如果需要自定义图片，请前往<a href="https://sm.ms" target="_blank">SM.MS</a>上传图片，在下方填入图片的地址。
                     <br>
-                    地址示例: <code>https://i.loli.net/2021/10/24/9DjB5EhacuVGPHT.jpg</code>，预览卡片会同步更新。
+                    使用「随机图片」功能系统将从Pixiv随机抓取图片，下方将自动填入"预览地址"，保存活动后图片地址将转为"永久地址"，图片有效期90天。
                 </div>
-                <v-text-field
-                    label="头图地址"
-                    v-model="act_info.pic"
-                    outlined
-                ></v-text-field>
+                
+                <v-row class="d-flex flex-wrap">
+                    <v-col cols="9">
+                        <v-text-field
+                            label="头图地址"
+                            v-model="act_info.pic"
+                            outlined
+                        ></v-text-field>
+                    </v-col>
+                    <v-col cols="2" class="my-3">
+                        <v-btn depressed large :loading="get_rd_pic_btn_loading" @click="get_random_pic">随机图片</v-btn>
+                    </v-col>
+                </v-row>
 
 
                 <!-- 预览 -->
@@ -821,6 +829,7 @@
 
 <script>
 const backEndUrl = process.env.VUE_APP_API_URL;
+import nProgress from 'nprogress'
 export default {
     name:"AdminIndex",
     data(){
@@ -913,6 +922,7 @@ export default {
           open:false,
           item:null,
         },
+        get_rd_pic_btn_loading:false,
       }
     },
     mounted:function(){
@@ -942,6 +952,25 @@ export default {
             })
             .catch(function (error) {
                 _this.error(error)
+            })
+        },
+        get_random_pic:function(){
+            let _this = this
+            this.get_rd_pic_btn_loading = true
+            this.axios({
+                method: 'get',
+                url: backEndUrl+"/api/admin/act/getRandomPic",
+            }).then(function (res) {
+                if (res.data.status == 0){
+                    _this.act_info.pic = res.data.data.url
+                }else{
+                    _this.error(res.data.msg)
+                }
+                _this.get_rd_pic_btn_loading = false
+            })
+            .catch(function (error) {
+                _this.error(error)
+                _this.get_rd_pic_btn_loading = false
             })
         },
         edit_act:function(act_item){
@@ -982,6 +1011,7 @@ export default {
 
             this.act_dialog = true
             this.act_edit_mode = "new"
+            this.get_random_pic()
         },
         edit_class:function(){
             this.editClassDialog = true
@@ -1027,6 +1057,7 @@ export default {
             })
         },
         save_act:function(){
+            nProgress.start()
             let apiUrl = ""
             let _this = this
             if (this.act_edit_mode == "new"){
@@ -1048,10 +1079,12 @@ export default {
                 }else{
                     _this.error(res.data.msg)
                 }
+                nProgress.done()
             })
             .catch(function (error) {
                 // 处理错误情况
                 _this.error(error)
+                nProgress.done()
             })
 
         },
