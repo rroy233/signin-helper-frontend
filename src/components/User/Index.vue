@@ -208,7 +208,7 @@
             签到活动参与记录
           </div>
           <div class="text-caption">
-              点击右方小图标可查看活动详情。
+              点击即可可查看活动详情。
           </div>
         </div>
           <!--记录-->
@@ -217,35 +217,36 @@
               fluid
           >
             <div justify="center" align="center" class="mt-6">
-              <v-img src="../../assets/qiqihutao.png" max-width="200px" class="mx-auto" alt=""></v-img>
+              <v-img src="../../assets/jean_kokomi_ganyu.jpg" max-width="200px" class="mx-auto" alt=""></v-img>
               <div class="text-subtitle-1 grey--text">您尚未参与任何签到活动</div>
             </div>
           </v-container>
 
           <v-list three-line v-if="myActLog.total != 0">
+            <v-pagination
+              v-model="log_page"
+              :length="myActLog.pages_num"
+              class="pa-3"
+            ></v-pagination>
             <template v-for="(item, index) in myActLog.list">
               <v-list-item
                       :key="index"
+                      @click="view_act_info(item)"
               >
                 <v-list-item-avatar>
                   <v-icon>mdi-calendar-multiple-check</v-icon>
                 </v-list-item-avatar>
-
                 <v-list-item-content>
                   <v-list-item-title v-html="item.act_name"></v-list-item-title>
                   <v-list-item-subtitle >参与时间：{{item.date_time}}</v-list-item-subtitle>
                 </v-list-item-content>
                 <v-list-item-action>
-                  <v-btn icon @click="view_act_info(item)">
+                  <v-btn icon>
                     <v-icon color="grey lighten-1">mdi-information</v-icon>
                   </v-btn>
                 </v-list-item-action>
               </v-list-item>
             </template>
-            <v-pagination
-              v-model="log_page"
-              :length="myActLog.pages_num"
-            ></v-pagination>
           </v-list>
         </v-container>
 
@@ -363,6 +364,10 @@
           <div class="text-caption">
               数据统计刷新存在0~10s延迟。
           </div>
+        </div>
+        <div justify="center" align="center" class="ma-4" v-if="sts.total!=sts.done">
+          <v-img src="../../assets/jean_kokomi_ganyu.jpg" max-width="200px" class="mx-auto" alt=""></v-img>
+          <div class="text-subtitle-1 grey--text">参与率未达标</div>
         </div>
         <v-card class="ma-2">
           <v-card-text>
@@ -506,7 +511,8 @@
         <v-card>
           <v-card-title>{{actQuery.name}}</v-card-title>
           <v-card-text>
-            <div class="text-overline">头图</div><v-img :src="actQuery.pic" max-height="200px" ></v-img><v-divider></v-divider>
+          <div class="text-overline">头图</div><v-img :src="actQuery.pic" max-height="200px" ></v-img><v-divider></v-divider>
+          <div class="text-overline">头图地址</div>{{actQuery.pic}}<v-divider></v-divider>
           <div class="text-overline">活动公告</div>{{actQuery.announcement}}<v-divider></v-divider>
           <div class="text-overline">签到完成提示语</div>{{actQuery.cheer_text}}<v-divider></v-divider>
           <div class="text-overline">活动开始时间</div>{{actQuery.begin_time}}<v-divider></v-divider>
@@ -666,7 +672,7 @@ export default {
           class_code:"",
           is_admin:0,
         },
-        myActLog:[],
+        myActLog:{total:0},
         log_page:1,
         noti_type:"none",
         actQuery:{
