@@ -212,7 +212,17 @@
           </div>
         </div>
           <!--记录-->
-          <v-list three-line v-if="myActLog.length != 0">
+          <v-container
+              v-show="myActLog.total == 0"
+              fluid
+          >
+            <div justify="center" align="center" class="mt-6">
+              <v-img src="../../assets/qiqihutao.png" max-width="200px" class="mx-auto" alt=""></v-img>
+              <div class="text-subtitle-1 grey--text">您尚未参与任何签到活动</div>
+            </div>
+          </v-container>
+
+          <v-list three-line v-if="myActLog.total != 0">
             <template v-for="(item, index) in myActLog.list">
               <v-list-item
                       :key="index"
@@ -232,6 +242,10 @@
                 </v-list-item-action>
               </v-list-item>
             </template>
+            <v-pagination
+              v-model="log_page"
+              :length="myActLog.pages_num"
+            ></v-pagination>
           </v-list>
         </v-container>
 
@@ -653,6 +667,7 @@ export default {
           is_admin:0,
         },
         myActLog:[],
+        log_page:1,
         noti_type:"none",
         actQuery:{
           name:"",
@@ -753,6 +768,9 @@ export default {
         this.axios({
             method: 'get',
             url: backEndUrl+'/api/user/act/log',
+            params:{
+              page:1
+            }
         }).then(function (res) {
             // 处理成功情况
             if (res.data.status == 0){
@@ -1075,6 +1093,28 @@ export default {
         nProgress.start()
         this.drawer = false
         nProgress.done()
+      },
+      log_page:function(){
+        let _this = this
+        //获取参与记录
+        this.axios({
+            method: 'get',
+            url: backEndUrl+'/api/user/act/log',
+            params:{
+              page:_this.log_page,
+            }
+        }).then(function (res) {
+            // 处理成功情况
+            if (res.data.status == 0){
+                _this.myActLog = res.data.data
+              }else{
+                _this.error(res.data.msg)
+              }
+        })
+        .catch(function (error) {
+            // 处理错误情况
+            _this.error(error)
+        })
       }
     },
 }
