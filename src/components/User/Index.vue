@@ -96,7 +96,7 @@
           </v-alert>
         </div>
         
-        <!--  -->
+        <!-- 首页(无活动) -->
         <v-container
             v-show="group == 0 && act_info.total==0"
             fluid
@@ -107,6 +107,7 @@
           </div>
         </v-container>
 
+        <!-- 首页 -->
         <v-container
             v-show="group == 0 && act_info.total!=0"
         >
@@ -200,6 +201,7 @@
       </v-card>
         </v-container>
 
+        <!-- 参与记录页面 -->
         <v-container
                 v-show="group == 1"
         >
@@ -208,7 +210,7 @@
             签到活动参与记录
           </div>
           <div class="text-caption">
-              点击即可可查看活动详情。
+              点击即可查看活动详情。
           </div>
         </div>
           <!--记录-->
@@ -250,6 +252,7 @@
           </v-list>
         </v-container>
 
+        <!-- 个人信息页面 -->
         <v-container
                 v-show="group == 2"
         >
@@ -541,13 +544,16 @@
                           label="选择文件"
                   ></v-file-input>
               </v-card-text>
-              <v-card-text>支持格式：{{upload.act_item.file_options.allow_ext}}</v-card-text>
-              <v-card-text>文件大小不超过{{upload.act_item.file_options.max_size}}</v-card-text>
-              <v-card-text>特殊要求：{{upload.act_item.file_options.note}}</v-card-text>
+              <v-card-text>
+                支持格式：{{upload.act_item.file_options.allow_ext}} <br>
+                文件大小不超过{{upload.act_item.file_options.max_size}} <br>
+                特殊要求：{{upload.act_item.file_options.note}} <br>
+                文件将在服务器保存30天
+              </v-card-text>
               <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn color="blue darken-1" text @click="upload.dialog=false" :disabled="this.upload.loading" right>关闭</v-btn>
-                  <v-btn color="blue darken-1" text @click="upload_signin" :loading="upload.loading" right>OK</v-btn>
+                  <v-btn color="blue darken-1" text @click="upload_signin" :loading="upload.loading" right>上传并签到</v-btn>
               </v-card-actions>
           </v-card>
       </v-dialog>
@@ -598,7 +604,7 @@
       
     <v-footer app>
     <!-- -->
-    <div class="text-caption py-3">{{version}} &copy;2021 ROY233<br><a href="https://github.com/rroy233/signin-helper" class="text-decoration-none" target="_blank">Github</a> | <a href="https://hub.fastgit.org/rroy233/signin-helper/blob/main/CHANGELOG.md" class="text-decoration-none" target="_blank">更新日志</a></div>
+    <div class="text-caption py-3">{{version}} &copy;2021 ROY233<br><a href="https://github.com/rroy233/signin-helper" class="text-decoration-none" target="_blank">Github</a> | <a href="https://github.com/rroy233/signin-helper/blob/main/CHANGELOG.md" class="text-decoration-none" target="_blank">更新日志</a></div>
     </v-footer>
     </v-app>
   </div>
