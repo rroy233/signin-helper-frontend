@@ -26,7 +26,7 @@
         ></v-divider>
 
         <div class="v-text-body-1">
-            您当前所管理的班级名称为<code>{{class_info.class_name}}</code>,一共有<code>{{class_info.total}}</code>名同学已加入班级。
+            您当前所管理的班级名称为<code>{{class_info.class_name}}</code>。
             新同学可以使用班级代码<code>{{class_info.class_code}}</code>加入。
         </div>
         </v-alert>
@@ -344,9 +344,9 @@
                 <div class="text-body-1 mb-3">
                     我们允许您个性化设置签到卡片的背景图片，如果您要使用默认图片的话，下方输入框请 <code>留空</code>。
                     <br>
-                    如果需要自定义图片，请前往<a href="https://sm.ms" target="_blank">SM.MS</a>上传图片，在下方填入图片的地址。
+                    如果需要自定义图片，请前往<a href="https://sm.ms" target="_blank">SM.MS</a>上传图片，在下方填入图片的地址，保存后将自动转换为加密地址。
                     <br>
-                    使用「随机图片」功能系统将从Pixiv随机抓取图片，下方将自动填入"预览地址"，保存活动后图片地址将转为"永久地址"，图片有效期90天。
+                    使用「随机图片」功能系统将从Pixiv随机抓取图片，下方将自动填入"预览地址"，保存活动后图片地址将转为加密"永久地址"，图片有效期90天。
                 </div>
                 
                 <div class="d-flex flex-wrap">
@@ -479,7 +479,7 @@
                         
                         <v-slider
                         v-model="act_info.upload.max_size"
-                        label="文件大小不超过(MB)"
+                        label="单个文件大小不超过(MB)"
                         thumb-color="green lighten-1"
                         thumb-label="always"
                         max="100"
@@ -729,40 +729,50 @@
                 </v-btn>
                 <v-toolbar-title>班级成员管理</v-toolbar-title>
                 <v-spacer></v-spacer>
+                <v-btn @click="get_user_list" dark icon><v-icon>mdi-refresh</v-icon></v-btn>
             </v-toolbar>
 
-             <v-alert
-            shaped
-            type="info"
-            class="mx-auto ma-4"
-            max-width="450px"
-            >
-            【踢出班级】:点击按钮后，将立即清除用户的签到记录，记录无法恢复。用户将重新回到“初始化”阶段。谨慎操作！
-            </v-alert>
-            <v-card class="mx-auto ma-4" max-width="450px">
-                <v-card-title>
-                所有班级成员
-                <v-spacer></v-spacer>
-                <v-text-field
-                        v-model="userlist_search"
-                        append-icon="mdi-magnify"
-                        label="搜索"
-                        single-line
-                        hide-details
-                    ></v-text-field>
-                    </v-card-title>
-                <v-card-text>
-                    <v-data-table
-                    :headers="userlist_headers"
-                    :items="user_list"
-                    :search="userlist_search"
-                    >
-                        <template v-slot:[`item.actions`]="{ item }">
-                            <v-btn depressed small class="ma-2" @click="confirn_delete(item)">踢出班级</v-btn>
-                        </template>
-                    </v-data-table>
-                </v-card-text>
-            </v-card>
+            <v-card-text>
+                <v-alert
+                shaped
+                type="info"
+                class="mx-auto ma-4"
+                >
+                【踢出班级】:点击按钮后，将立即清除用户的签到记录及上传的文件，记录无法恢复。用户将重新回到“初始化”阶段。谨慎操作！<br>
+                【设为/撤销管理员】: 操作成功后该用户需要重新登录才能生效。
+                </v-alert>
+                <v-card class="mx-auto ma-4">
+                    <v-card-title>
+                    所有班级成员
+                    <v-spacer></v-spacer>
+                    <v-text-field
+                            v-model="userlist_search"
+                            append-icon="mdi-magnify"
+                            label="搜索"
+                            single-line
+                            hide-details
+                        ></v-text-field>
+                        </v-card-title>
+                    <v-card-text>
+                        <v-data-table
+                        :headers="userlist_headers"
+                        :items="user_list"
+                        :search="userlist_search"
+                        >
+                            <template v-slot:[`item.is_admin`]="{ item }">
+                                <v-icon v-if="item.admin == 1" color="purple">mdi-check-circle-outline</v-icon>
+                                <v-icon v-if="item.admin == 0">mdi-close-circle-outline</v-icon>
+                            </template>
+                            <template v-slot:[`item.actions`]="{ item }">
+                                <v-btn depressed small class="ma-2" v-if="item.admin == 0" color="primary" @click="set_admin(item,1)">设为管理员</v-btn>
+                                <v-btn depressed small class="ma-2" v-if="item.admin == 1" @click="set_admin(item,0)">撤销管理员</v-btn>
+
+                                <v-btn depressed small class="ma-2" @click="confirn_delete(item)" color="error">踢出班级</v-btn>
+                            </template>
+                        </v-data-table>
+                    </v-card-text>
+                </v-card>
+            </v-card-text>
         </v-card>
         </v-dialog>
 
@@ -902,11 +912,14 @@ export default {
         userlist_search:'',
         userlist_headers: [
           {
-            text: 'ID',
+            text: '序号',
             align: 'start',
             value: 'id',
           },
           { text: '姓名', value: 'name' },
+          { text: '邮箱', value: 'email' },
+          { text: '通知方式', value: 'noti_type' },
+          { text: '是否为管理员', value: 'is_admin',sortable: false,},
           { text: '操作', value: 'actions',sortable: false,},
         ],
         export_data:{
@@ -1120,6 +1133,7 @@ export default {
         },
         show_user_list:function(){
             let _this = this
+            nProgress.start()
             //获取用户
             this.axios({
                 method: 'get',
@@ -1132,6 +1146,7 @@ export default {
                 }else{
                     _this.error(res.data.msg)
                 }
+                nProgress.done()
             }).catch(function (error) {
                 // 处理错误情况
                 _this.error(error)
@@ -1139,6 +1154,7 @@ export default {
         },
         get_user_list:function(){
             let _this = this
+            nProgress.start()
             //获取用户
             this.axios({
                 method: 'get',
@@ -1150,13 +1166,14 @@ export default {
                 }else{
                     _this.error(res.data.msg)
                 }
+                nProgress.done()
             }).catch(function (error) {
                 // 处理错误情况
                 _this.error(error)
             })
         },
         op_user:function(){
-             let _this = this
+            let _this = this
             
             this.axios({
                 method: 'post',
@@ -1168,8 +1185,32 @@ export default {
                 },
             }).then(function (res) {
                 if (res.data.status == 0){
-                    _this.get_user_list()
                     _this.success("操作成功")
+                }else{
+                    _this.error(res.data.msg)
+                }
+                _this.dialogDelete.open=false
+            }).catch(function (error) {
+                // 处理错误情况
+                _this.error(error)
+            })
+
+        },
+        set_admin:function(item,set_to){
+            let _this = this     
+            this.axios({
+                method: 'post',
+                url: backEndUrl+"/api/admin/user/setAdmin",
+                headers:_this.csrfHeader,
+                data:{
+                    user_id:item.user_id,
+                    set_to:set_to,
+                    sign:item.sign
+                },
+            }).then(function (res) {
+                if (res.data.status == 0){
+                    _this.success("操作成功")
+                    _this.get_user_list()
                 }else{
                     _this.error(res.data.msg)
                 }
